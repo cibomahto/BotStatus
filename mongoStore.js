@@ -1,7 +1,9 @@
-var Db = require('mongodb').Db,
-  Connection = require('mongodb').Connection,
-  Server = require('mongodb').Server,
-  BSON = require('mongodb').BSONNative;
+var querystring = require("querystring");
+
+var Db = require('mongodb').Db;
+var Connection = require('mongodb').Connection;
+var Server = require('mongodb').Server;
+var BSON = require('mongodb').BSONNative;
 
 
 function storeMachineStatus(status) {
@@ -15,13 +17,16 @@ function storeMachineStatus(status) {
   db.open(function(err, db) {
     db.collection("machineStatus", function(err, collection) {
       // TODO: only add once?
+      status._id = status.machinename;
+
       console.log("Request to store: " + status);
-      collection.insert(status);
+      collection.save(status);
+//      collection.insert(status);
     });
   });
 }
 
-function getAllMachineStatus() {
+function getAllMachineStatus(output, statusHandler) {
   host = "127.0.0.1";
   port = 27017;
 
@@ -31,9 +36,19 @@ function getAllMachineStatus() {
 
   db.open(function(err, db) {
     db.collection("machineStatus", function(err, collection) {
-      var statuses = collection.find({});
-      console.log(statuses);
-      return statuses;
+      collection.find({}, function(err, cursor) {
+        cursor.each(function(err, machine) {
+          if(machine != null) {
+            statusHandler(output, querystring.stringify(machine));
+          }
+          else {
+            // TODO: any cleanup here?
+            // TODO: callback here?
+            output.write('</body></html>');
+            output.end();
+          }
+        });
+      });
     });
   });
 }

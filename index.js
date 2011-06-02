@@ -7,5 +7,6 @@ handle["/"] = requestHandlers.start;
 handle["/start"] = requestHandlers.start;
 handle["/upload"] = requestHandlers.upload;
 handle["/manualform"] = requestHandlers.manualform;
+handle["/botStatus.css"] = requestHandlers.botstatuscss;
 
 server.start(router.route, handle);

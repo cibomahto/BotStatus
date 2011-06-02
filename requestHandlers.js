@@ -4,13 +4,17 @@ var mongoStore = require("./mongoStore");
 function start(response, postData) {
   console.log("Request handler 'start' was called.");
 
-    response.writeHead(200, {"Content-Type": "text/html"});
-    response.write("Botfarm monitor!");
+  response.writeHead(200, {'Content-Type': 'text/html'});
+  response.write(
+    '<html><head>'
+    + '<title>Botfarm monitor!</title></head>'
+    + '<link href="botStatus.css" rel="stylesheet" type="text/css">'
+  );
+  response.write('<body>');
+  response.write('');
 
-    var machineStatuses = mongoStore.getAllMachineStatus();
- //   response.write(querystring.parse(machineStatuses));
-
-    response.end();
+  mongoStore.getAllMachineStatus(response, renderMachineStatus);
+//  response.end();
 }
 
 
@@ -39,7 +43,18 @@ function manualform(response, postData) {
 }
 
 function renderMachineStatus(output, postData) {
-  output.write('<div class="machineStatus">');
+  switch(querystring.parse(postData)["status"]) {
+    case "Ready":
+      output.write('<div class="machineStatus machineStatusReady">');
+      break;
+    case "Building":
+      output.write('<div class="machineStatus machineStatusBuilding">');
+      break;
+    case "Error":
+      output.write('<div class="machineStatus machineStatusError">');
+      break;
+  }
+
   output.write('<h2 class="machineTitle">' + querystring.parse(postData)["machinename"] + '</h2>');
   output.write('Job name: ' + querystring.parse(postData)["jobname"] + '<br/>');
   output.write('Status: ' + querystring.parse(postData)["status"] + '<br/>');
@@ -54,11 +69,38 @@ function upload(response, postData) {
   renderMachineStatus(response, postData);
   response.end();
 
-  // TODO: filter the parameters we store?
+  // TODO: filter the parameters we store? This implementation is classically insecure :-)
   // TODO: keep a timestamp.
   mongoStore.storeMachineStatus(querystring.parse(postData));
+}
+
+function botstatuscss(response, postData) {
+  console.log("Request handler 'botstatuscss' was called.");
+  response.writeHead(200, {"Content-Type": "text/css"});
+  response.write(
+    'body {'
+    + 'background-color: white;'
+    + '}'
+    + 'div.machineStatus {'
+    + '  width: 400px;'
+    + '  margin: 10px;'
+    + '  padding: 4px;'
+    + '  border: 2px solid black;'
+    + '}'
+    + 'div.machineStatusReady {'
+    + '  background-color: green;'
+    + '}'
+    + 'div.machineStatusBuilding {'
+    + '  background-color: yellow;'
+    + '}'
+    + 'div.machineStatusError {'
+    + '  background-color: red;'
+    + '}'
+  );
+  response.end();
 }
 
 exports.start = start;
 exports.manualform = manualform;
 exports.upload = upload;
+exports.botstatuscss = botstatuscss;
