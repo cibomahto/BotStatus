@@ -7,7 +7,9 @@ function start(response, postData) {
   response.writeHead(200, {'Content-Type': 'text/html'});
   response.write(
     '<html><head>'
-    + '<title>Botfarm monitor!</title></head>'
+    + '<title>Botfarm monitor!</title>'
+    + '<meta http-equiv="refresh" content="15">'
+    + '</head>'
     + '<link href="botStatus.css" rel="stylesheet" type="text/css">'
   );
   response.write('<body>');
@@ -53,6 +55,9 @@ function renderMachineStatus(output, postData) {
     case "Error":
       output.write('<div class="machineStatus machineStatusError">');
       break;
+    default:
+      output.write('<div class="machineStatus">');
+      break;
   }
 
   output.write('<h2 class="machineTitle">' + querystring.parse(postData)["machinename"] + '</h2>');
@@ -86,6 +91,7 @@ function botstatuscss(response, postData) {
     + '  margin: 10px;'
     + '  padding: 4px;'
     + '  border: 2px solid black;'
+    + '  background-color: gray;'
     + '}'
     + 'div.machineStatusReady {'
     + '  background-color: green;'
